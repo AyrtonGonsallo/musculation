@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../models/exercice.dart';
@@ -51,26 +53,56 @@ class _ExerciceDetailScreenState extends State<ExerciceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final conseilsText = widget.exercice.conseils;
+    final gifPath = widget.exercice.gif_local;
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.exercice.titre),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // GIF
-            if (widget.exercice.gif.isNotEmpty)
-              Image.network(widget.exercice.gif, height: 200, fit: BoxFit.cover),
+            // Conseils
+            Text(widget.exercice.titre,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
+            const SizedBox(height: 8),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(widget.exercice.section!.titre,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+
+                  Text(widget.exercice.partie!.titre,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+
+                  ]
+
+            ),
+
+            const SizedBox(height: 8),
+            // GIF centré
+            if (gifPath.isNotEmpty)
+              Center(
+                child: Image.file(
+                  File(gifPath),
+                  height: 300,
+                  fit: BoxFit.cover,
+                ),
+              ),
 
             const SizedBox(height: 16),
 
             // Conseils
-            const Text('Conseils:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('Conseils:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            Text(conseilsText),
+            Text(
+              conseilsText,
+              textAlign: TextAlign.center, // si tu veux le texte centré aussi
+            ),
 
             const SizedBox(height: 16),
 
@@ -85,15 +117,17 @@ class _ExerciceDetailScreenState extends State<ExerciceDetailScreen> {
             // Player vidéo
             if (showVideo)
               if (_youtubeController != null)
-                YoutubePlayer(
-                  controller: _youtubeController!,
-                  showVideoProgressIndicator: true,
-                  progressIndicatorColor: Colors.red,
-                )
-
+                Center(
+                  child: YoutubePlayer(
+                    controller: _youtubeController!,
+                    showVideoProgressIndicator: true,
+                    progressIndicatorColor: Colors.red,
+                  ),
+                ),
           ],
         ),
-      ),
+      )
+      ,
     );
   }
 }

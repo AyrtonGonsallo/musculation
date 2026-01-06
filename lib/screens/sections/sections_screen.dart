@@ -76,7 +76,7 @@ class _SectionsScreenState extends State<SectionsScreen> {
               final section = sections[i];
 
               return ListTile(
-                title: Text(section.titre),
+                title: Text("${section.id} - ${section.titre}"),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () => section.delete(),

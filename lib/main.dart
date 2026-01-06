@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:musculation/models/partie.dart';
 import 'package:musculation/screens/exercices/exercices_screen.dart';
+import 'package:musculation/screens/parametres/parametres_screen.dart';
 import 'package:musculation/screens/parties/parties_screen.dart';
+import 'package:musculation/screens/seances/seances_screen.dart';
 import 'package:musculation/screens/sections/sections_screen.dart';
+import 'package:animated_reorderable_list/animated_reorderable_list.dart';
+import 'package:musculation/screens/stats/stats_screen.dart';
 
 import 'models/exercice.dart';
 import 'models/seance.dart';
@@ -27,7 +32,10 @@ void main() async {
   await Hive.openBox<Exercice>('exercices');
   await Hive.openBox<Seance>('seances');
 
-  runApp(const MyApp());
+  initializeDateFormatting('fr_FR', null).then((_) => runApp(const MyApp()));
+
+
+
 }
 
 class MyApp extends StatelessWidget {
@@ -56,7 +64,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
       ),
-      home: const MyHomePage(title: 'Gym rats'),
+      home: const MyHomePage(title: 'The gym rat'),
     );
   }
 }
@@ -80,18 +88,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.brown,
               ),
               child: Text(
-                'Gym rats',
+                'The gym rat',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -171,31 +168,100 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Séances'),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SeancesScreen(),
+                  ),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Parametres'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ParametresScreen(),
+                  ),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Statistiques'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const StatsScreen(),
+                  ),
+                );
               },
             ),
           ],
         ),
       ),
 
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
+      body: NumberList(),
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+
     );
 
+  }
+}
+
+
+class NumberItem {
+  final int id;
+  NumberItem(this.id);
+}
+
+class NumberList extends StatefulWidget {
+  const NumberList({super.key});
+
+  @override
+  State<NumberList> createState() => _NumberListState();
+}
+
+class _NumberListState extends State<NumberList> {
+  // liste d'exemple
+  List<NumberItem> numbers = List.generate(10, (index) => NumberItem(index + 1));
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedReorderableListView<NumberItem>(
+      items: numbers,
+      // animation à l'insertion
+      enterTransition: [SlideInDown()],
+      // animation à la suppression
+      exitTransition: [SlideInUp()],
+      // delay avant drag pour tester
+      dragStartDelay: const Duration(milliseconds: 200),
+      // pour savoir si 2 items sont identiques
+      isSameItem: (a, b) => a.id == b.id,
+      onReorder: (int oldIndex, int newIndex) {
+        setState(() {
+          final item = numbers.removeAt(oldIndex);
+          numbers.insert(newIndex, item);
+        });
+      },
+      itemBuilder: (context, index) {
+        final item = numbers[index];
+        return Card(
+          key: ValueKey(item.id),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            title: Text('Item ${item.id}'),
+            trailing: const Icon(Icons.drag_handle),
+          ),
+        );
+      },
+    );
   }
 }

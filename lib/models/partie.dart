@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'partie.g.dart'; // 👈 ICI, juste après les imports
+part 'partie.g.dart';
 
 @HiveType(typeId: 1)
 class Partie extends HiveObject {
@@ -14,4 +14,22 @@ class Partie extends HiveObject {
     required this.id,
     required this.titre,
   });
+
+  // =========================
+  // 🔁 JSON EXPORT / IMPORT
+  // =========================
+
+  /// Export pour sauvegarde / backup
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'titre': titre,
+  };
+
+  /// Import depuis JSON
+  factory Partie.fromJson(Map<String, dynamic> json) {
+    return Partie(
+      id: json['id'],
+      titre: json['titre'],
+    );
+  }
 }

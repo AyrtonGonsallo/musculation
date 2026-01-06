@@ -76,7 +76,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
               final partie = parties[i];
 
               return ListTile(
-                title: Text(partie.titre),
+                title: Text("${partie.id} - ${partie.titre}"),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () => partie.delete(),

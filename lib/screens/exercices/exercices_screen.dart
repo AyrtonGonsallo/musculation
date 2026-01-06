@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -6,6 +9,14 @@ import '../../models/partie.dart';
 import '../../models/section.dart';
 import '../../repositories/exercice_repository.dart';
 import 'exercice_detail_screen.dart';
+
+const List<String> exerciceCategories = [
+  'Exercice de base',
+  'Exercice d\'isolation',
+  'Renforcement',
+  'Échauffement',
+];
+
 
 class ExercicesScreen extends StatefulWidget {
   const ExercicesScreen({super.key});
@@ -28,49 +39,110 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
     // Dropdown IDs
     int? selectedSectionId;
     int? selectedPartieId;
+    String? selectedCategorie;
+    String? gifLocalPath; // chemin du gif uploadé
+
+    Future<void> pickGif() async {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['gif'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          gifLocalPath = result.files.single.path!;
+        });
+      }
+    }
+
 
     final sections = Hive.box<Section>('sections').values.toList();
     final parties = Hive.box<Partie>('parties').values.toList();
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Ajouter un exercice'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(controller: titreController, decoration: const InputDecoration(labelText: 'Titre')),
-              TextField(controller: gifController, decoration: const InputDecoration(labelText: 'Gif URL')),
-              TextField(controller: lienController, decoration: const InputDecoration(labelText: 'Lien vidéo')),
-              TextField(controller: categorieController, decoration: const InputDecoration(labelText: 'Catégorie')),
-
-              const SizedBox(height: 10),
-              // Dropdown Section
-              DropdownButtonFormField<int>(
-                value: selectedSectionId,
-                decoration: const InputDecoration(labelText: 'Section'),
-                items: sections.map((s) => DropdownMenuItem(value: s.id, child: Text(s.titre))).toList(),
-                onChanged: (val) => selectedSectionId = val,
-              ),
-
-              const SizedBox(height: 10),
-              // Dropdown Partie
-              DropdownButtonFormField<int>(
-                value: selectedPartieId,
-                decoration: const InputDecoration(labelText: 'Partie'),
-                items: parties.map((p) => DropdownMenuItem(value: p.id, child: Text(p.titre))).toList(),
-                onChanged: (val) => selectedPartieId = val,
-              ),
-
-              const SizedBox(height: 10),
-              // WYSIWYG conseils
-              SizedBox(
-                height: 150,
-                child: QuillEditor.basic(
-                  controller: conseilsController,
+        content: SizedBox(
+          // Limite la hauteur pour permettre le scroll si nécessaire
+          height: MediaQuery.of(context).size.height * 0.8,
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: titreController,
+                  decoration: const InputDecoration(labelText: 'Titre'),
                 ),
-              ),
-            ],
+                // GIF local
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.gif_box),
+                  label: Text(gifLocalPath == null ? 'Image GIF locale' : 'Image GIF locale sélectionnée'),
+                  onPressed: pickGif,
+                ),
+                if (gifLocalPath != null) ...[
+                  const SizedBox(height: 10),
+                  Image.file(
+                    File(gifLocalPath!),
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+                TextField(
+                  controller: lienController,
+                  decoration: const InputDecoration(labelText: 'Lien vidéo'),
+                ),
+                const SizedBox(height: 10),
+                // Catégorie
+                DropdownButtonFormField<String>(
+                  value: selectedCategorie,
+                  decoration: const InputDecoration(labelText: 'Catégorie'),
+                  items: exerciceCategories
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedCategorie = val),
+                ),
+                const SizedBox(height: 10),
+                // Section
+                DropdownButtonFormField<int>(
+                  value: selectedSectionId,
+                  decoration: const InputDecoration(labelText: 'Section'),
+                  items: sections
+                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.titre)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedSectionId = val),
+                ),
+                const SizedBox(height: 10),
+                // Partie
+                DropdownButtonFormField<int>(
+                  value: selectedPartieId,
+                  decoration: const InputDecoration(labelText: 'Partie'),
+                  items: parties
+                      .map((p) => DropdownMenuItem(value: p.id, child: Text(p.titre)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedPartieId = val),
+                ),
+                const SizedBox(height: 10),
+
+                const SizedBox(height: 10),
+                // Conseils WYSIWYG
+                SizedBox(
+                  height: 150,
+                  child: Container(
+                    padding: const EdgeInsets.all(8), // espace interne
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100], // fond clair
+                      border: Border.all(color: Colors.grey), // bordure grise
+                      borderRadius: BorderRadius.circular(8), // coins arrondis
+                    ),
+                    child: QuillEditor.basic(
+                      controller: conseilsController,
+                    ),
+                  ),
+                ),
+
+              ],
+            ),
           ),
         ),
         actions: [
@@ -80,14 +152,15 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
               if (titreController.text.trim().isEmpty) return;
 
               final exercice = Exercice(
-                id: DateTime.now().millisecondsSinceEpoch,
+                id: DateTime.now().millisecondsSinceEpoch.remainder(0xFFFFFFFF),
                 titre: titreController.text.trim(),
                 gif: gifController.text.trim(),
                 lienVideo: lienController.text.trim(),
-                categorie: (categorieController.text.trim()),
+                categorie: selectedCategorie ?? '',
                 sectionId: selectedSectionId ?? 0,
                 partieId: selectedPartieId ?? 0,
-                conseils: conseilsController.document.toPlainText(), // ou .toDelta() si tu veux stocker le delta JSON
+                conseils: conseilsController.document.toPlainText(),
+                gif_local: gifLocalPath ?? '',
               );
 
               ExerciceRepository.add(exercice);

@@ -9,7 +9,7 @@ class PartieRepository {
   static void add(String titre) {
     _box.add(
       Partie(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: DateTime.now().millisecondsSinceEpoch.remainder(0xFFFFFFFF),
         titre: titre,
       ),
     );

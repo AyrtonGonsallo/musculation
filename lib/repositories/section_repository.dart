@@ -9,7 +9,7 @@ class SectionRepository {
   static void add(String titre) {
     _box.add(
       Section(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: DateTime.now().millisecondsSinceEpoch.remainder(0xFFFFFFFF),
         titre: titre,
       ),
     );

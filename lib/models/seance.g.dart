@@ -8,7 +8,7 @@ part of 'seance.dart';
 
 class SeanceAdapter extends TypeAdapter<Seance> {
   @override
-  final int typeId = 3;
+  final int typeId = 4;
 
   @override
   Seance read(BinaryReader reader) {
@@ -18,8 +18,8 @@ class SeanceAdapter extends TypeAdapter<Seance> {
     };
     return Seance(
       id: fields[0] as int,
-      jour: fields[1] as String,
-      duree: fields[2] as int,
+      jour: fields[1] as DateTime,
+      duree: fields[2] as String,
       caloriesBrulees: fields[3] as int,
       exercices: (fields[4] as List).cast<Exercice>(),
     );

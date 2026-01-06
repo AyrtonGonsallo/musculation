@@ -31,6 +31,9 @@ class Exercice extends HiveObject {
   @HiveField(7)
   String conseils;
 
+  @HiveField(8)
+  String gif_local;
+
   Exercice({
     required this.id,
     required this.titre,
@@ -40,9 +43,45 @@ class Exercice extends HiveObject {
     required this.sectionId,
     required this.partieId,
     required this.conseils,
+    required this.gif_local,
   });
 
-  // ⚡️ Accesseurs pratiques pour récupérer les objets liés
+  // =========================
+  // 🔁 JSON EXPORT / IMPORT
+  // =========================
+
+  /// Export pour sauvegarde / partage / backup
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'titre': titre,
+    'gif': gif,
+    'gif_local': gif_local,
+    'lienVideo': lienVideo,
+    'categorie': categorie,
+    'sectionId': sectionId,
+    'partieId': partieId,
+    'conseils': conseils,
+  };
+
+  /// Import depuis JSON
+  factory Exercice.fromJson(Map<String, dynamic> json) {
+    return Exercice(
+      id: json['id'],
+      titre: json['titre'],
+      gif: json['gif'] ?? '',
+      lienVideo: json['lienVideo'] ?? '',
+      categorie: json['categorie'] ?? '',
+      sectionId: json['sectionId'],
+      partieId: json['partieId'],
+      conseils: json['conseils'] ?? '',
+      gif_local: json['gif_local'] ?? '',
+    );
+  }
+
+  // =========================
+  // 🔗 ACCESSEURS RELATIONNELS
+  // =========================
+
   Section? get section {
     final box = Hive.box<Section>('sections');
     return box.values.firstWhere(
