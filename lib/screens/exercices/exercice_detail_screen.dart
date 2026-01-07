@@ -107,10 +107,11 @@ class _ExerciceDetailScreenState extends State<ExerciceDetailScreen> {
             const SizedBox(height: 16),
 
             // Bouton vidéo
-            ElevatedButton(
-              onPressed: _toggleVideo,
-              child: Text(showVideo ? 'Masquer la vidéo' : 'Voir la vidéo'),
-            ),
+            if (widget.exercice.lienVideo.isNotEmpty)
+              ElevatedButton(
+                onPressed: _toggleVideo,
+                child: Text(showVideo ? 'Masquer la vidéo' : 'Voir la vidéo'),
+              ),
 
             const SizedBox(height: 16),
 

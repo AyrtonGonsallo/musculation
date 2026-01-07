@@ -109,18 +109,31 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.brown,
+             DrawerHeader(
+              decoration: const BoxDecoration(
+              color: Colors.brown,
               ),
-              child: Text(
-                'The gym rat',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo.png',
+                    height: 80,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'The Gym Rat',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
+
 
             ListTile(
               leading: const Icon(Icons.category),
@@ -136,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.category),
+              leading: const Icon(Icons.person_add),
               title: const Text('Parties'),
               onTap: () {
                 Navigator.pop(context); // ferme le menu
@@ -192,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             ListTile(
-              leading: const Icon(Icons.settings),
+              leading: const Icon(Icons.query_stats),
               title: const Text('Statistiques'),
               onTap: () {
                 Navigator.pop(context);
@@ -208,7 +221,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
 
-      body: NumberList(),
+      body: HomeScreen(),
 
 
     );
@@ -217,51 +230,144 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 
-class NumberItem {
-  final int id;
-  NumberItem(this.id);
-}
 
-class NumberList extends StatefulWidget {
-  const NumberList({super.key});
-
-  @override
-  State<NumberList> createState() => _NumberListState();
-}
-
-class _NumberListState extends State<NumberList> {
-  // liste d'exemple
-  List<NumberItem> numbers = List.generate(10, (index) => NumberItem(index + 1));
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedReorderableListView<NumberItem>(
-      items: numbers,
-      // animation à l'insertion
-      enterTransition: [SlideInDown()],
-      // animation à la suppression
-      exitTransition: [SlideInUp()],
-      // delay avant drag pour tester
-      dragStartDelay: const Duration(milliseconds: 200),
-      // pour savoir si 2 items sont identiques
-      isSameItem: (a, b) => a.id == b.id,
-      onReorder: (int oldIndex, int newIndex) {
-        setState(() {
-          final item = numbers.removeAt(oldIndex);
-          numbers.insert(newIndex, item);
-        });
-      },
-      itemBuilder: (context, index) {
-        final item = numbers[index];
-        return Card(
-          key: ValueKey(item.id),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            title: Text('Item ${item.id}'),
-            trailing: const Icon(Icons.drag_handle),
-          ),
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('The Gym Rat'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1,
+          children: [
+            _HomeBox(
+              title: 'Exercices',
+              imagePath: 'assets/images/exercice.png',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ExercicesScreen(),
+                  ),
+                );
+              },
+            ),
+            _HomeBox(
+              title: 'Parties',
+              imagePath: 'assets/images/parties.png',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PartiesScreen(),
+                  ),
+                );
+              },
+            ),
+            _HomeBox(
+              title: 'Séances',
+              imagePath: 'assets/images/seances.png',
+              onTap: () {
+                // Navigator.push(...)
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SeancesScreen(),
+                  ),
+                );
+              },
+            ),
+            _HomeBox(
+              title: 'Sections',
+              imagePath: 'assets/images/sections.png',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SectionsScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
+
+class _HomeBox extends StatelessWidget {
+  final String title;
+  final String imagePath;
+  final VoidCallback onTap;
+
+  const _HomeBox({
+    required this.title,
+    required this.imagePath,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Colors.brown,
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
+              ),
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+

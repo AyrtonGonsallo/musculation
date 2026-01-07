@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:path/path.dart' as p;
 
@@ -13,40 +14,66 @@ import '../models/seance.dart';
 
 class DatabaseExportService {
   static Future<void> exportDatabase(BuildContext context) async {
-    // 📁 Choix du dossier
-    final directoryPath = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Choisir le dossier de sauvegarde',
-    );
+    try {
+      // 📁 Choix du dossier
+      final directoryPath = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Choisir le dossier de sauvegarde',
+      );
 
-    if (directoryPath == null) return;
+      if (directoryPath == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Export annulé')),
+        );
+        return;
+      }
 
-    // 📦 Boxes
-    final sectionBox = Hive.box<Section>('sections');
-    final partieBox = Hive.box<Partie>('parties');
-    final exerciceBox = Hive.box<Exercice>('exercices');
-    final seanceBox = Hive.box<Seance>('seances');
+      debugPrint('📂 Dossier sélectionné: $directoryPath');
 
-    // 🧱 Données
-    final data = {
-      'sections': sectionBox.values.map((s) => s.toJson()).toList(),
-      'parties': partieBox.values.map((p) => p.toJson()).toList(),
-      'exercices': exerciceBox.values.map((e) => e.toJson()).toList(),
-      'seances': seanceBox.values.map((s) => s.toJson()).toList(),
-      'exportedAt': DateTime.now().toIso8601String(),
-    };
+      // 📦 Boxes Hive
+      final sectionBox = Hive.box<Section>('sections');
+      final partieBox = Hive.box<Partie>('parties');
+      final exerciceBox = Hive.box<Exercice>('exercices');
+      final seanceBox = Hive.box<Seance>('seances');
 
-    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+      // 🧱 Données
+      final data = {
+        'sections': sectionBox.values.map((s) => s.toJson()).toList(),
+        'parties': partieBox.values.map((p) => p.toJson()).toList(),
+        'exercices': exerciceBox.values.map((e) => e.toJson()).toList(),
+        'seances': seanceBox.values.map((s) => s.toJson()).toList(),
+        'exportedAt': DateTime.now().toIso8601String(),
+      };
 
-    final filePath = p.join(directoryPath, 'backup_musculation.json');
-    final file = File(filePath);
+      final jsonString =
+      const JsonEncoder.withIndent('  ').convert(data);
 
-    await file.writeAsString(jsonString);
+      final filePath = p.join(directoryPath, 'backup_musculation.json');
+      final file = File(filePath);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Export réussi : $filePath')),
-    );
+      await file.writeAsString(jsonString);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export réussi\n$filePath'),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } on PlatformException catch (e) {
+      debugPrint('❌ PlatformException: ${e.code} ${e.message}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur plateforme : ${e.message}')),
+      );
+    } catch (e, stack) {
+      debugPrint('❌ Erreur export: $e');
+      debugPrintStack(stackTrace: stack);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l’export : $e')),
+      );
+    }
   }
 }
+
 
 class DatabaseImportService {
   static Future<void> importDatabase(BuildContext context) async {
