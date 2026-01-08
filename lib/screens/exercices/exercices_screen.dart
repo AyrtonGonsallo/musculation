@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/exercice.dart';
 import '../../models/partie.dart';
@@ -34,7 +33,8 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
     final categorieController = TextEditingController();
 
     // WYSIWYG pour conseils
-    final conseilsController = QuillController.basic();
+    final conseilsController =
+    TextEditingController();
 
     // Dropdown IDs
     int? selectedSectionId;
@@ -56,8 +56,10 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
     }
 
 
-    final sections = Hive.box<Section>('sections').values.toList();
-    final parties = Hive.box<Partie>('parties').values.toList();
+    final sections = Hive.box<Section>('sections').values.toList()..sort((a, b) =>
+        a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
+    final parties = Hive.box<Partie>('parties').values.toList()..sort((a, b) =>
+        a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
 
     showDialog(
       context: context,
@@ -126,18 +128,16 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
 
                 const SizedBox(height: 10),
                 // Conseils WYSIWYG
-                SizedBox(
-                  height: 150,
-                  child: Container(
-                    padding: const EdgeInsets.all(8), // espace interne
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100], // fond clair
-                      border: Border.all(color: Colors.grey), // bordure grise
-                      borderRadius: BorderRadius.circular(8), // coins arrondis
-                    ),
-                    child: QuillEditor.basic(
-                      controller: conseilsController,
-                    ),
+                const Text("Conseils :"),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: conseilsController,
+                  minLines: 5,
+                  maxLines: 10,
+                  decoration: const InputDecoration(
+                    hintText: "Conseils d'exécution...",
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
                   ),
                 ),
 
@@ -159,7 +159,7 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
                 categorie: selectedCategorie ?? '',
                 sectionId: selectedSectionId ?? 0,
                 partieId: selectedPartieId ?? 0,
-                conseils: conseilsController.document.toPlainText(),
+                conseils: conseilsController.text,
                 gif_local: gifLocalPath ?? '',
               );
 
@@ -185,7 +185,8 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
       body: ValueListenableBuilder(
         valueListenable: Hive.box<Exercice>('exercices').listenable(),
         builder: (context, Box<Exercice> box, _) {
-          final exercices = box.values.toList();
+          final exercices = box.values.toList()..sort((a, b) =>
+              a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
 
           if (exercices.isEmpty) return const Center(child: Text('Aucun exercice'));
 

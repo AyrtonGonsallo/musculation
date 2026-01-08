@@ -63,7 +63,8 @@ class _PartiesScreenState extends State<PartiesScreen> {
           : ValueListenableBuilder(
         valueListenable: Hive.box<Partie>('parties').listenable(),
         builder: (_, Box<Partie> box, __) {
-          final parties = box.values.toList();
+          final parties = box.values.toList()..sort((a, b) =>
+              a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
 
           if (parties.isEmpty) {
             return const Center(child: Text('Aucune partie'));

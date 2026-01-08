@@ -19,6 +19,7 @@ class ParametresScreen extends StatelessWidget {
             ElevatedButton.icon(
               icon: const Icon(Icons.upload),
               label: const Text('Exporter la base de données'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[300],foregroundColor: Colors.white),
               onPressed: () async {
                 await DatabaseExportService.exportDatabase(context);
               },
@@ -27,7 +28,7 @@ class ParametresScreen extends StatelessWidget {
             ElevatedButton.icon(
               icon: const Icon(Icons.download),
               label: const Text('Importer une base de données'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown,foregroundColor: Colors.white),
               onPressed: () async {
                 await DatabaseImportService.importDatabase(context);
               },

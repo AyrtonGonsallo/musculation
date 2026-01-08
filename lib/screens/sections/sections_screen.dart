@@ -63,7 +63,8 @@ class _SectionsScreenState extends State<SectionsScreen> {
           : ValueListenableBuilder(
         valueListenable: Hive.box<Section>('sections').listenable(),
         builder: (_, Box<Section> box, __) {
-          final sections = box.values.toList();
+          final sections = box.values.toList()..sort((a, b) =>
+              a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
 
           if (sections.isEmpty) {
             return const Center(child: Text('Aucune section'));

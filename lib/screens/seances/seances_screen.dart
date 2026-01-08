@@ -43,7 +43,8 @@ class _SeancesScreenState extends State<SeancesScreen> {
   }
 
   Future<void> _loadExercices() async {
-    final list = await ExerciceRepository.getAll();
+    final list = await ExerciceRepository.getAll()..sort((a, b) =>
+        a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
     setState(() {
       allExercices = list;
     });

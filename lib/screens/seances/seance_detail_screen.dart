@@ -67,7 +67,7 @@ class _SeanceDetailScreenState extends State<SeanceDetailScreen> {
                 const SizedBox(height: 8),
                 Text('Durée: ${widget.seance.duree}',
                     style: const TextStyle(fontSize: 16)),
-                Text('Calories brûlées: ${widget.seance.caloriesBrulees}',
+                Text('Calories brûlées: ${widget.seance.caloriesBrulees} kcal',
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 16),
                 Row(
