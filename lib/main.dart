@@ -251,7 +251,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             _HomeBox(
               title: 'Exercices',
-              imagePath: 'assets/images/exercice.png',
+              imagePath: 'assets/images/exercices.png',
               onTap: () {
                 Navigator.push(
                   context,

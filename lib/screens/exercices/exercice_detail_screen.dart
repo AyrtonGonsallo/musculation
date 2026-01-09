@@ -98,12 +98,12 @@ class _ExerciceDetailScreenState extends State<ExerciceDetailScreen> {
             const SizedBox(height: 16),
 
             // Conseils
-            const Text('Conseils:',
+            const Text('Description et conseils :',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             Text(
               conseilsText,
-              textAlign: TextAlign.center, // si tu veux le texte centré aussi
+              textAlign: TextAlign.left, // si tu veux le texte centré aussi
             ),
 
             const SizedBox(height: 16),

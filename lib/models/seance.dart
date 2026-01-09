@@ -20,6 +20,8 @@ class Seance extends HiveObject {
   @HiveField(4)
   List<Exercice> exercices;
 
+
+
   Seance({
     required this.id,
     required this.jour,

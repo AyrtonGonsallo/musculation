@@ -26,11 +26,16 @@ class ExercicesScreen extends StatefulWidget {
 
 class _ExercicesScreenState extends State<ExercicesScreen> {
 
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
   void _openAddExercicePopup() {
     final titreController = TextEditingController();
     final lienController = TextEditingController();
     final gifController = TextEditingController();
     final categorieController = TextEditingController();
+
+
 
     // WYSIWYG pour conseils
     final conseilsController =
@@ -177,58 +182,97 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.inversePrimary,title: const Text('Exercices')),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Exercices'),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddExercicePopup,
         child: const Icon(Icons.add),
       ),
-      body: ValueListenableBuilder(
-        valueListenable: Hive.box<Exercice>('exercices').listenable(),
-        builder: (context, Box<Exercice> box, _) {
-          final exercices = box.values.toList()..sort((a, b) =>
-              a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));;
-
-          if (exercices.isEmpty) return const Center(child: Text('Aucun exercice'));
-
-          return ListView.separated(
-            itemCount: exercices.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) {
-              final e = exercices[i];
-
-              return ListTile(
-                title: Text(e.titre),
-                subtitle: Text('Catégorie: ${e.categorie}, Section: ${e.section?.titre}, Partie: ${e.partie?.titre}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min, // ⚡️ Important pour ne pas étirer
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
-                      tooltip: 'Voir',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ExerciceDetailScreen(exercice: e),
-                          ),
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      tooltip: 'Supprimer',
-                      onPressed: () => e.delete(),
-                    ),
-                  ],
+      body: Column(
+        children: [
+          // 🔍 BARRE DE RECHERCHE
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() => _query = value.toLowerCase());
+              },
+              decoration: InputDecoration(
+                hintText: 'Rechercher par titre, catégorie, section, partie',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                onTap: () {
-                  // plus tard: popup détail ou édition
-                },
-              );
-            },
-          );
-        },
+              ),
+            ),
+          ),
+
+          // 📃 LISTE
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: Hive.box<Exercice>('exercices').listenable(),
+              builder: (context, Box<Exercice> box, _) {
+                final exercices = box.values.where((e) {
+                  if (_query.isEmpty) return true;
+
+                  return e.titre.toLowerCase().contains(_query) ||
+                      (e.categorie?.toLowerCase().contains(_query) ?? false) ||
+                      (e.section?.titre.toLowerCase().contains(_query) ?? false) ||
+                      (e.partie?.titre.toLowerCase().contains(_query) ?? false);
+                }).toList()
+                  ..sort((a, b) =>
+                      a.titre.toLowerCase().compareTo(b.titre.toLowerCase()));
+
+                if (exercices.isEmpty) {
+                  return const Center(child: Text('Aucun exercice trouvé'));
+                }
+
+                return ListView.separated(
+                  itemCount: exercices.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) {
+                    final e = exercices[i];
+
+                    return ListTile(
+                      title: Text(e.titre),
+                      subtitle: Text(
+                        'Catégorie: ${e.categorie} | '
+                            'Section: ${e.section?.titre ?? '-'} | '
+                            'Partie: ${e.partie?.titre ?? '-'}',
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ExerciceDetailScreen(exercice: e),
+                                ),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => e.delete(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
+
 }
